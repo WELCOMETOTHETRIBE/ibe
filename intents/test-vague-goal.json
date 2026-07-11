@@ -1,0 +1,24 @@
+{
+  "goal": "Improve the rate limiter performance",
+  "scope": {
+    "files": ["target-service/patched/rate-limiter.ts"],
+    "functions": ["allow"]
+  },
+  "invariants": [
+    {
+      "name": "max_allow_count",
+      "metric_path": "allow_count",
+      "operator": "le",
+      "threshold": 10
+    }
+  ],
+  "risk_tolerance": "strict",
+  "test_inputs": [
+    {
+      "action": "allow",
+      "key": "user1",
+      "timestamp_ms": 0
+    }
+  ]
+}
+

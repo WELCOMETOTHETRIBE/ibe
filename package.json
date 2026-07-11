@@ -1,0 +1,23 @@
+{
+  "name": "ibe",
+  "version": "0.1.0",
+  "description": "Intent-Bound Execution MVP",
+  "type": "module",
+  "main": "dist/src/cli.js",
+  "bin": {
+    "ibe": "./dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/src/cli.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {}
+}
+
