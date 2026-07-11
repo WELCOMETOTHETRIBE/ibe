@@ -1,0 +1,12 @@
+{
+  "name": "ibe-policy-bundle",
+  "version": "1.0.0",
+  "note": "Human-readable Rego mirror of the authoritative TypeScript DeterministicPolicyEngine (packages/policy). Hashed into evidence when OPA is the decision point.",
+  "bundles": [
+    { "package": "ibe.authority", "file": "authority/authority.rego" },
+    { "package": "ibe.scope", "file": "scope/scope.rego" },
+    { "package": "ibe.promotion", "file": "promotion/promotion.rego" },
+    { "package": "ibe.dataflow", "file": "data-flow/data_flow.rego" },
+    { "package": "ibe.resilience", "file": "resilience/resilience.rego" }
+  ]
+}

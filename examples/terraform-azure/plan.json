@@ -1,0 +1,35 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.8.0",
+  "resource_changes": [
+    {
+      "address": "azurerm_network_security_rule.admin_ssh",
+      "type": "azurerm_network_security_rule",
+      "name": "admin_ssh",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "access": "Allow",
+          "direction": "Inbound",
+          "protocol": "Tcp",
+          "destination_port_range": "22",
+          "source_address_prefix": "Internet",
+          "tags": { "environment": "staging" }
+        }
+      }
+    },
+    {
+      "address": "azurerm_key_vault.cui_vault",
+      "type": "azurerm_key_vault",
+      "name": "cui_vault",
+      "change": {
+        "actions": ["update"],
+        "after": {
+          "public_network_access_enabled": true,
+          "sku_name": "premium",
+          "tags": { "environment": "staging", "data_classification": "CUI" }
+        }
+      }
+    }
+  ]
+}

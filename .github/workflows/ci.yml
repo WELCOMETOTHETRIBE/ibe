@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  assurance:
+    name: Build, verify, and run the assurance gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install (pinned)
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit / integration / security tests
+        run: npm test
+
+      - name: Formal model checks (capability + promotion lifecycles)
+        run: npm run formal
+
+      - name: End-to-end demos (must all refuse the unsafe proposals)
+        run: npm run demo
+
+      - name: Assurance certificate verification
+        run: |
+          node dist/packages/cli/index.js assurance verify \
+            evidence/generated/rate-limiter.certificate.json \
+            --keyring evidence/generated/INT-RL-001.keyring.json
+
+      - name: Dependency audit (non-blocking)
+        run: npm run audit
+
+  tlaplus:
+    name: TLA+ model check (optional, best-effort)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Fetch TLC and model-check the specs
+        run: |
+          curl -L -o formal/tla/tla2tools.jar \
+            https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar
+          bash formal/run-tlc.sh

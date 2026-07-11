@@ -1,0 +1,53 @@
+{
+  "schema_version": "2.0",
+  "intent": {
+    "id": "INT-RL-001",
+    "title": "Preserve token-bucket rate limit under burst load",
+    "objective": "Ensure the rate limiter denies requests once the per-key token capacity is exhausted within a burst.",
+    "owner": { "id": "human-patrick", "type": "human" },
+    "created_at": "2026-01-01T00:00:00.000Z",
+    "expires_at": "2026-12-31T00:00:00.000Z"
+  },
+  "authority": {
+    "requested_by": "human-patrick",
+    "approved_by": ["human-governor-01"],
+    "allowed_actions": ["repository.read", "repository.write_branch", "test.execute"],
+    "approval_required": ["production.promote"],
+    "prohibited_actions": ["self_approve", "policy.modify", "secret.export", "production.shell"]
+  },
+  "scope": {
+    "repositories": ["WELCOMETOTHETRIBE/ibe"],
+    "branches": ["ibe/INT-RL-001"],
+    "files": ["examples/rate-limiter/target/patched.ts"],
+    "functions": ["allow", "refill", "getBucket", "getRemaining", "getKeys"],
+    "model_elements": ["CMP-RATELIMIT"],
+    "environments": ["development", "staging"],
+    "exclusions": ["production"]
+  },
+  "requirements": { "satisfies": ["RQ-RATELIMIT"], "preserves": ["RQ-AUDIT"] },
+  "invariants": [
+    {
+      "id": "INV-RATE",
+      "description": "Allowed requests in a burst must not exceed capacity.",
+      "evaluator": { "type": "property", "reference": "VER-RATELIMIT-PROP" }
+    }
+  ],
+  "risk": {
+    "level": "medium",
+    "tolerance": "strict",
+    "maximum_blast_radius": "staging-only",
+    "maximum_cost_usd": 0
+  },
+  "expected_events": ["BuildCompleted", "VerificationPassed", "AssuranceCertificateIssued"],
+  "forbidden_event_patterns": ["ProductionChangeWithoutApproval", "PromotionBeforeVerification"],
+  "verification": { "required_cases": ["VER-RATELIMIT-PROP"], "minimum_independent_verifiers": 1 },
+  "recovery": {
+    "required": true,
+    "strategy": "rollback",
+    "maximum_recovery_time_seconds": 600,
+    "safe_state": "previous-approved-version"
+  },
+  "evidence": {
+    "required_types": ["source-diff", "policy-decision", "test-results", "causal-trace", "verifier-attestation"]
+  }
+}

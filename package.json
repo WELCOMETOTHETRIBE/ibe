@@ -1,23 +1,56 @@
 {
   "name": "ibe",
-  "version": "0.1.0",
-  "description": "Intent-Bound Execution MVP",
+  "version": "0.2.0",
+  "description": "Intent-Bound Execution — an AI Engineering Assurance Platform",
   "type": "module",
-  "main": "dist/src/cli.js",
+  "main": "dist/packages/cli/index.js",
   "bin": {
-    "ibe": "./dist/src/cli.js"
+    "ibe": "./dist/packages/cli/index.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/src/cli.js"
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/packages/cli/index.js",
+    "ibe": "node dist/packages/cli/index.js",
+    "serve": "node dist/packages/api/server.js",
+    "test": "node --test \"dist/**/*.test.js\"",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"packages/**/*.ts\" \"examples/**/*.ts\"",
+    "format:check": "prettier --check \"packages/**/*.ts\" \"examples/**/*.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "formal": "node dist/packages/cli/index.js formal check",
+    "demo": "node dist/packages/cli/index.js demo run",
+    "audit": "npm audit --omit=dev || true",
+    "verify:acceptance": "npm run build && npm test && npm run demo && npm run formal"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "assurance",
+    "intent-bound-execution",
+    "ai-governance",
+    "mbse",
+    "stpa",
+    "policy-as-code",
+    "provenance",
+    "capability-security",
+    "formal-methods"
+  ],
+  "author": "IBE",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "typescript": "^5.3.3"
+    "@types/node": "20.14.10",
+    "@typescript-eslint/eslint-plugin": "7.16.0",
+    "@typescript-eslint/parser": "7.16.0",
+    "eslint": "8.57.0",
+    "prettier": "3.3.3",
+    "typescript": "5.5.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "ts-morph": "23.0.0",
+    "yaml": "2.8.3",
+    "zod": "3.23.8"
+  }
 }
-

@@ -1,0 +1,53 @@
+{
+  "schema_version": "2.0",
+  "intent": {
+    "id": "INT-TF-003",
+    "title": "Add a staging-only private network rule",
+    "objective": "Ensure the staging network change keeps the CUI vault private and does not expose any administrative endpoint publicly.",
+    "owner": { "id": "human-patrick", "type": "human" },
+    "created_at": "2026-01-01T00:00:00.000Z",
+    "expires_at": "2026-12-31T00:00:00.000Z"
+  },
+  "authority": {
+    "requested_by": "human-patrick",
+    "approved_by": ["human-governor-01"],
+    "allowed_actions": ["repository.read", "repository.write_branch", "terraform.plan"],
+    "approval_required": ["terraform.apply", "production.promote"],
+    "prohibited_actions": ["self_approve", "policy.modify", "secret.export", "production.shell"]
+  },
+  "scope": {
+    "repositories": ["WELCOMETOTHETRIBE/ibe"],
+    "branches": ["ibe/INT-TF-003"],
+    "files": ["infra/**"],
+    "functions": [],
+    "model_elements": ["CMP-CUI-VAULT", "IF-VAULT-PUBLIC"],
+    "environments": ["development", "staging"],
+    "exclusions": ["production"]
+  },
+  "requirements": { "satisfies": ["RQ-CUI-PRIVATE"], "preserves": ["RQ-CUI-PRIVATE"] },
+  "invariants": [
+    {
+      "id": "INV-NO-PUBLIC-CUI",
+      "description": "Administrative/CUI endpoints must not be publicly reachable.",
+      "evaluator": { "type": "policy", "reference": "policy.no_public_admin" }
+    }
+  ],
+  "risk": {
+    "level": "critical",
+    "tolerance": "strict",
+    "maximum_blast_radius": "staging-only",
+    "maximum_cost_usd": 50
+  },
+  "expected_events": ["BuildCompleted", "VerificationPassed", "AssuranceCertificateIssued"],
+  "forbidden_event_patterns": ["ProductionChangeWithoutApproval", "PromotionBeforeVerification"],
+  "verification": { "required_cases": ["VER-NETWORK-011"], "minimum_independent_verifiers": 1 },
+  "recovery": {
+    "required": true,
+    "strategy": "rollback",
+    "maximum_recovery_time_seconds": 600,
+    "safe_state": "previous-approved-tfstate"
+  },
+  "evidence": {
+    "required_types": ["source-diff", "policy-decision", "causal-trace", "verifier-attestation", "provenance", "oscal"]
+  }
+}

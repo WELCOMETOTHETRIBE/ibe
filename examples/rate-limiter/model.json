@@ -1,0 +1,60 @@
+{
+  "model_version": "RL-1.0.0",
+  "name": "rate-limiter-service",
+  "elements": [
+    {
+      "kind": "Requirement",
+      "id": "RQ-RATELIMIT",
+      "version": "1",
+      "name": "Enforce per-key rate limit",
+      "description": "The service must deny requests exceeding the configured token capacity.",
+      "owner": "human-patrick",
+      "relationships": [{ "type": "allocatedTo", "target": "CMP-RATELIMIT" }],
+      "source": "requirements/rate-limit.md"
+    },
+    {
+      "kind": "Component",
+      "id": "CMP-RATELIMIT",
+      "version": "1",
+      "name": "TokenBucketRateLimiter",
+      "description": "Token bucket limiter with per-key buckets.",
+      "owner": "builder-agent-04",
+      "relationships": [{ "type": "exposes", "target": "IF-ALLOW" }],
+      "source": "examples/rate-limiter/target/patched.ts"
+    },
+    {
+      "kind": "Interface",
+      "id": "IF-ALLOW",
+      "version": "1",
+      "name": "allow(key)",
+      "description": "Admission decision interface.",
+      "owner": "builder-agent-04",
+      "public": false,
+      "relationships": []
+    },
+    {
+      "kind": "Invariant",
+      "id": "INV-RATE",
+      "version": "1",
+      "name": "Burst allow bounded by capacity",
+      "description": "Allowed requests in a burst must not exceed capacity.",
+      "owner": "human-governor-01",
+      "relationships": [{ "type": "constrains", "target": "CMP-RATELIMIT" }],
+      "source": "models/invariants"
+    },
+    {
+      "kind": "VerificationCase",
+      "id": "VER-RATELIMIT-PROP",
+      "version": "1",
+      "name": "Property test: burst never exceeds capacity",
+      "description": "Randomized property-based verification of the rate-limit invariant.",
+      "owner": "verifier-01",
+      "method": "property",
+      "relationships": [
+        { "type": "verifies", "target": "INV-RATE" },
+        { "type": "verifies", "target": "RQ-RATELIMIT" }
+      ],
+      "source": "examples/rate-limiter/verifiers.ts"
+    }
+  ]
+}

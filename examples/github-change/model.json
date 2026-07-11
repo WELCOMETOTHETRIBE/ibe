@@ -1,0 +1,45 @@
+{
+  "model_version": "GH-1.0.0",
+  "name": "auth-service",
+  "elements": [
+    {
+      "kind": "Requirement",
+      "id": "RQ-AUTH-RATE",
+      "version": "1",
+      "name": "Rate-check on login",
+      "description": "Login must apply a per-user rate check.",
+      "owner": "human-patrick",
+      "relationships": [{ "type": "allocatedTo", "target": "CMP-AUTH" }]
+    },
+    {
+      "kind": "Component",
+      "id": "CMP-AUTH",
+      "version": "1",
+      "name": "AuthService",
+      "description": "Authentication service exposing login.",
+      "owner": "builder-agent-04",
+      "relationships": [{ "type": "exposes", "target": "IF-LOGIN" }],
+      "source": "src/auth.ts"
+    },
+    {
+      "kind": "Interface",
+      "id": "IF-LOGIN",
+      "version": "1",
+      "name": "login",
+      "description": "Login interface.",
+      "owner": "builder-agent-04",
+      "public": true,
+      "relationships": []
+    },
+    {
+      "kind": "VerificationCase",
+      "id": "VER-AUTH-SCOPE",
+      "version": "1",
+      "name": "Scope conformance",
+      "description": "Confirms only authorized files/functions changed.",
+      "owner": "verifier-01",
+      "method": "static",
+      "relationships": [{ "type": "verifies", "target": "RQ-AUTH-RATE" }]
+    }
+  ]
+}

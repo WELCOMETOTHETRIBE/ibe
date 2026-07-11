@@ -1,0 +1,108 @@
+{
+  "model_version": "TF-1.0.0",
+  "name": "mactech-cui-vault",
+  "elements": [
+    {
+      "kind": "Requirement",
+      "id": "RQ-CUI-PRIVATE",
+      "version": "1",
+      "name": "CUI vault must be private",
+      "description": "The CUI vault must not be reachable from the public internet.",
+      "owner": "human-governor-01",
+      "relationships": [{ "type": "allocatedTo", "target": "CMP-CUI-VAULT" }]
+    },
+    {
+      "kind": "Component",
+      "id": "CMP-APP",
+      "version": "1",
+      "name": "Application tier",
+      "description": "Processes requests and reads CUI from the vault.",
+      "owner": "builder-agent-04",
+      "relationships": [{ "type": "dependsOn", "target": "CMP-CUI-VAULT" }],
+      "contract": {
+        "assumptions": ["classified input", "authenticated caller"],
+        "guarantees": ["audit event emitted"],
+        "on_assumption_failure": ["refuse processing", "emit failure event"]
+      }
+    },
+    {
+      "kind": "Component",
+      "id": "CMP-CUI-VAULT",
+      "version": "1",
+      "name": "CUI Vault",
+      "description": "Stores Controlled Unclassified Information at rest.",
+      "owner": "human-governor-01",
+      "relationships": [{ "type": "exposes", "target": "IF-VAULT-PUBLIC" }],
+      "contract": {
+        "assumptions": ["authenticated caller"],
+        "guarantees": ["encrypted persistence", "tenant isolation", "audit event emitted", "classified input"],
+        "on_assumption_failure": ["refuse processing", "do not persist data"]
+      }
+    },
+    {
+      "kind": "Interface",
+      "id": "IF-VAULT-PUBLIC",
+      "version": "1",
+      "name": "Vault network endpoint",
+      "description": "Network endpoint proposed to become publicly reachable.",
+      "owner": "builder-agent-04",
+      "public": true,
+      "relationships": []
+    },
+    {
+      "kind": "TrustBoundary",
+      "id": "TB-VAULT",
+      "version": "1",
+      "name": "CUI trust boundary",
+      "description": "Boundary enclosing CUI at rest.",
+      "owner": "human-governor-01",
+      "encloses": ["CMP-CUI-VAULT"],
+      "relationships": []
+    },
+    {
+      "kind": "DataFlow",
+      "id": "DF-CUI",
+      "version": "1",
+      "name": "CUI read path",
+      "description": "CUI flowing from the vault out through the endpoint.",
+      "owner": "human-governor-01",
+      "classification": "CUI",
+      "from": "CMP-CUI-VAULT",
+      "to": "IF-VAULT-PUBLIC",
+      "transport": "https",
+      "encrypted": true,
+      "tenant": "mactech",
+      "permitted_processors": ["CMP-APP"],
+      "relationships": [{ "type": "crosses", "target": "TB-VAULT" }]
+    },
+    {
+      "kind": "Invariant",
+      "id": "INV-NO-PUBLIC-CUI",
+      "version": "1",
+      "name": "CUI not publicly reachable",
+      "description": "CUI endpoints must not be publicly reachable.",
+      "owner": "human-governor-01",
+      "policyRef": "policy.no_public_admin",
+      "relationships": [{ "type": "constrains", "target": "CMP-CUI-VAULT" }]
+    },
+    {
+      "kind": "Hazard",
+      "id": "HZ-CUI-EXPOSED",
+      "version": "1",
+      "name": "CUI exposed publicly",
+      "description": "CUI vault becomes reachable from the internet.",
+      "owner": "human-governor-01",
+      "relationships": [{ "type": "mitigatedBy", "target": "INV-NO-PUBLIC-CUI" }]
+    },
+    {
+      "kind": "VerificationCase",
+      "id": "VER-NETWORK-011",
+      "version": "1",
+      "name": "Network trust boundary check",
+      "description": "Confirms no public admin endpoint is introduced.",
+      "owner": "verifier-01",
+      "method": "plan",
+      "relationships": [{ "type": "verifies", "target": "INV-NO-PUBLIC-CUI" }]
+    }
+  ]
+}
