@@ -71,6 +71,18 @@ npm install && npm run build && npm test && npm run lint && npm run demo
 Run the CLI with `node dist/packages/cli/index.js <command>` (or `npm run ibe -- <command>`).
 Start the REST control plane with `npm run serve` (see `GET /openapi.json`).
 
+### Demo UI / initiative notice
+
+`web/index.html` is a self-contained page that doubles as the R&D initiative
+notice and an interactive demo: operate the eight assurance gates and watch the
+governing rule resolve to a signed certificate or a refusal, and expand the
+three real demo runs (gate ledgers, machine-readable violations, signed
+certificates, and the causal event trace). Open it directly or serve it:
+
+```bash
+npx serve web            # or: python3 -m http.server -d web 8000
+```
+
 ## The enforced chain
 
 ```

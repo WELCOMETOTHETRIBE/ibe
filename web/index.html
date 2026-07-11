@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Intent-Bound Execution — an AI Engineering Assurance Platform. R&D initiative notice and interactive demo.">
+<meta name="color-scheme" content="light dark">
+<title>Intent-Bound Execution — AI Engineering Assurance Platform</title>
+</head>
+<body>
+<style>
+  /* ============================================================= TOKENS */
+  :root {
+    --ink: #0c0f16;
+    --panel: #ffffff;
+    --panel-2: #f4f6f9;
+    --line: #d7dce6;
+    --line-soft: #e7ebf2;
+    --fg: #1b2230;
+    --fg-2: #55607a;
+    --fg-3: #808aa1;
+    --seal: #b7822f;      /* gold, tuned for light ground */
+    --seal-glow: rgba(183,130,47,0.14);
+    --pass: #2f9e6d;
+    --refuse: #d24a3e;
+    --pass-bg: rgba(47,158,109,0.10);
+    --refuse-bg: rgba(210,74,62,0.10);
+    --grid: rgba(27,34,48,0.05);
+    --shadow: 0 1px 2px rgba(16,22,38,0.06), 0 12px 34px rgba(16,22,38,0.08);
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --maxw: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #070a10;
+      --panel: #121826;
+      --panel-2: #0d121d;
+      --line: #263145;
+      --line-soft: #1c2536;
+      --fg: #dbe2f0;
+      --fg-2: #97a2ba;
+      --fg-3: #6b768e;
+      --seal: #d8a24a;
+      --seal-glow: rgba(216,162,74,0.16);
+      --pass: #47c088;
+      --refuse: #e0574b;
+      --pass-bg: rgba(71,192,136,0.12);
+      --refuse-bg: rgba(224,87,75,0.12);
+      --grid: rgba(219,226,240,0.05);
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 44px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #0c0f16; --panel: #ffffff; --panel-2: #f4f6f9; --line: #d7dce6; --line-soft: #e7ebf2;
+    --fg: #1b2230; --fg-2: #55607a; --fg-3: #808aa1; --seal: #b7822f; --seal-glow: rgba(183,130,47,0.14);
+    --pass: #2f9e6d; --refuse: #d24a3e; --pass-bg: rgba(47,158,109,0.10); --refuse-bg: rgba(210,74,62,0.10);
+    --grid: rgba(27,34,48,0.05); --shadow: 0 1px 2px rgba(16,22,38,0.06), 0 12px 34px rgba(16,22,38,0.08);
+  }
+  :root[data-theme="dark"] {
+    --ink: #070a10; --panel: #121826; --panel-2: #0d121d; --line: #263145; --line-soft: #1c2536;
+    --fg: #dbe2f0; --fg-2: #97a2ba; --fg-3: #6b768e; --seal: #d8a24a; --seal-glow: rgba(216,162,74,0.16);
+    --pass: #47c088; --refuse: #e0574b; --pass-bg: rgba(71,192,136,0.12); --refuse-bg: rgba(224,87,75,0.12);
+    --grid: rgba(219,226,240,0.05); --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 44px rgba(0,0,0,0.5);
+  }
+
+  /* ============================================================= BASE */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 34px,
+      var(--ink);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+  a { color: inherit; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+  .mono { font-family: var(--mono); }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--fg-3);
+  }
+
+  /* ============================================================= MASTHEAD */
+  .notice-strip {
+    border-bottom: 1px solid var(--line);
+    background: repeating-linear-gradient(45deg, var(--seal-glow) 0 14px, transparent 14px 28px);
+  }
+  .notice-strip .wrap {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-top: 9px; padding-bottom: 9px;
+  }
+  .notice-strip .tag {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--seal); font-weight: 600;
+  }
+  .theme-btn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    background: var(--panel); color: var(--fg-2); border: 1px solid var(--line);
+    padding: 6px 11px; border-radius: 999px; cursor: pointer;
+  }
+  .theme-btn:hover { color: var(--fg); border-color: var(--seal); }
+  .theme-btn:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+
+  header.masthead { padding: 62px 0 34px; border-bottom: 1px solid var(--line-soft); }
+  .kicker { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .kicker .rule { height: 1px; flex: 1; background: linear-gradient(90deg, var(--seal), transparent); }
+  h1.title {
+    font-family: var(--mono); font-weight: 600;
+    font-size: clamp(30px, 6.2vw, 60px); line-height: 1.02; letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  h1.title .dim { color: var(--fg-3); }
+  .subtitle {
+    font-size: clamp(17px, 2.4vw, 22px); color: var(--fg-2); font-weight: 400;
+    max-width: 42ch; margin-top: 14px;
+  }
+  .subtitle strong { color: var(--fg); font-weight: 600; }
+  .status-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .chip {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em;
+    padding: 6px 11px; border-radius: 6px; border: 1px solid var(--line);
+    color: var(--fg-2); background: var(--panel); display: inline-flex; align-items: center; gap: 7px;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--seal); }
+  .chip.pass .dot { background: var(--pass); }
+  .chip.warn .dot { background: var(--seal); }
+
+  /* ============================================================= SECTION */
+  section { padding: 54px 0; border-bottom: 1px solid var(--line-soft); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
+  .sec-head .num { font-family: var(--mono); font-size: 12px; color: var(--seal); letter-spacing: 0.1em; }
+  h2 { font-size: clamp(21px, 3vw, 27px); font-weight: 650; letter-spacing: -0.01em; }
+  .lead { color: var(--fg-2); max-width: 66ch; }
+
+  /* ============================================================= GOVERNING RULE (hero instrument) */
+  .rule-expr {
+    font-family: var(--mono); font-size: clamp(13px, 2.1vw, 17px); line-height: 2.1;
+    color: var(--fg-2); margin: 18px 0 6px; letter-spacing: 0.01em;
+  }
+  .rule-expr b { color: var(--fg); font-weight: 600; }
+  .rule-expr .op { color: var(--seal); }
+  .rule-expr .refuseword { color: var(--refuse); font-weight: 700; }
+
+  .instrument {
+    margin-top: 30px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px;
+  }
+  @media (max-width: 780px) { .instrument { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .panel-pad { padding: 20px; }
+  .panel-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-3); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .gates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 460px) { .gates { grid-template-columns: 1fr; } }
+  .gate {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 9px;
+    padding: 10px 11px; cursor: pointer; color: var(--fg); font-family: var(--sans);
+    font-size: 13px; transition: border-color .15s, background .15s;
+  }
+  .gate:hover { border-color: var(--seal); }
+  .gate:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+  .gate .sw {
+    flex: 0 0 auto; width: 30px; height: 18px; border-radius: 999px; position: relative;
+    background: var(--refuse); transition: background .18s;
+  }
+  .gate .sw::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+    border-radius: 50%; background: #fff; transition: transform .18s;
+  }
+  .gate[aria-pressed="true"] .sw { background: var(--pass); }
+  .gate[aria-pressed="true"] .sw::after { transform: translateX(12px); }
+  .gate .gname { line-height: 1.25; }
+  .gate .gname small { display: block; color: var(--fg-3); font-family: var(--mono); font-size: 10px; letter-spacing: .04em; }
+
+  .verdict {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 26px 20px; min-height: 100%;
+    border-radius: 14px; border: 1px solid var(--line);
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--seal-glow), transparent 60%),
+      var(--panel);
+    transition: border-color .25s;
+  }
+  .seal {
+    width: 118px; height: 118px; border-radius: 50%; display: grid; place-items: center;
+    position: relative; margin-bottom: 16px; transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  .seal svg { width: 100%; height: 100%; position: absolute; inset: 0; }
+  .seal .seal-core {
+    font-family: var(--mono); font-weight: 700; font-size: 13px; letter-spacing: 0.12em;
+    z-index: 1; text-transform: uppercase;
+  }
+  .verdict.accepted { border-color: color-mix(in srgb, var(--seal) 55%, var(--line)); }
+  .verdict.accepted .seal .ring { stroke: var(--seal); }
+  .verdict.accepted .seal-core { color: var(--seal); }
+  .verdict.refused { border-color: color-mix(in srgb, var(--refuse) 45%, var(--line)); }
+  .verdict.refused .seal .ring { stroke: var(--refuse); }
+  .verdict.refused .seal-core { color: var(--refuse); }
+  @media (prefers-reduced-motion: no-preference) {
+    .verdict.accepted .seal { animation: stamp .4s cubic-bezier(.2,.8,.2,1); }
+  }
+  @keyframes stamp { 0% { transform: scale(1.35); opacity: .2; } 60% { transform: scale(.94); } 100% { transform: scale(1); opacity: 1; } }
+  .verdict h3 { font-family: var(--mono); font-size: 20px; letter-spacing: 0.06em; }
+  .verdict .vsub { color: var(--fg-2); font-size: 13px; margin-top: 6px; max-width: 26ch; }
+  .verdict .count { font-family: var(--mono); font-size: 12px; color: var(--fg-3); margin-top: 12px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+  .preset {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    padding: 6px 10px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--fg-2); cursor: pointer;
+  }
+  .preset:hover { border-color: var(--seal); color: var(--fg); }
+  .preset:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+
+  /* ============================================================= CHAIN */
+  .chain { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .chain .step {
+    flex: 1 1 128px; background: var(--panel); border: 1px solid var(--line-soft);
+    border-radius: 9px; padding: 12px 12px; position: relative;
+  }
+  .chain .step .n { font-family: var(--mono); font-size: 10px; color: var(--seal); letter-spacing: .1em; }
+  .chain .step .t { font-size: 13px; margin-top: 4px; color: var(--fg); }
+  .chain .step .d { font-size: 11.5px; color: var(--fg-3); margin-top: 2px; line-height: 1.35; }
+
+  /* ============================================================= VERDICT BOARD */
+  .board { display: grid; gap: 14px; }
+  .case { background: var(--panel); border: 1px solid var(--line); border-radius: 13px; overflow: hidden; }
+  .case-head {
+    display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center;
+    padding: 18px 20px; cursor: pointer; width: 100%; text-align: left; background: none;
+    border: 0; color: var(--fg); font-family: var(--sans);
+  }
+  .case-head:hover { background: var(--panel-2); }
+  .case-head:focus-visible { outline: 2px solid var(--seal); outline-offset: -2px; }
+  .case-title { display: flex; flex-direction: column; gap: 4px; }
+  .case-title .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); }
+  .case-title .h { font-size: 16px; font-weight: 600; }
+  .case-title .h b { color: var(--seal); font-weight: 600; }
+  .badge {
+    font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    padding: 7px 13px; border-radius: 8px; white-space: nowrap; text-transform: uppercase;
+  }
+  .badge.refused { color: var(--refuse); background: var(--refuse-bg); border: 1px solid color-mix(in srgb, var(--refuse) 30%, transparent); }
+  .case-body { display: none; padding: 4px 20px 22px; border-top: 1px solid var(--line-soft); }
+  .case.open .case-body { display: block; }
+  .case.open .chev { transform: rotate(180deg); }
+  .chev { transition: transform .2s; color: var(--fg-3); font-family: var(--mono); }
+
+  .ledger { display: grid; gap: 4px; margin: 16px 0; }
+  .lrow {
+    display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center;
+    font-family: var(--mono); font-size: 12.5px; padding: 7px 10px; border-radius: 7px;
+    background: var(--panel-2); border: 1px solid var(--line-soft);
+  }
+  .lrow .mark { font-weight: 700; }
+  .lrow.ok .mark { color: var(--pass); }
+  .lrow.no .mark { color: var(--refuse); }
+  .lrow.no { background: var(--refuse-bg); border-color: color-mix(in srgb, var(--refuse) 25%, transparent); }
+  .lrow .gl { color: var(--fg); }
+  .lrow .st { color: var(--fg-3); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+  .lrow.no .st { color: var(--refuse); }
+
+  .subhead { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--fg-3); margin: 20px 0 9px; }
+  .viol { font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--fg-2);
+    background: var(--panel-2); border: 1px solid var(--line-soft); border-left: 3px solid var(--refuse);
+    border-radius: 7px; padding: 10px 12px; margin-bottom: 7px; overflow-x: auto; }
+  .viol b { color: var(--refuse); }
+  .cert {
+    font-family: var(--mono); font-size: 12px; color: var(--fg-2); background: var(--ink);
+    border: 1px solid var(--line); border-radius: 9px; padding: 14px; overflow-x: auto; line-height: 1.7;
+  }
+  .cert .key { color: var(--fg-3); }
+  .cert .val { color: var(--fg); }
+  .cert .seal-val { color: var(--seal); }
+  .cert .refuse-val { color: var(--refuse); }
+
+  /* causal DAG */
+  .dag { display: grid; gap: 0; margin-top: 8px; }
+  .node { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; }
+  .node .ev {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .04em; padding: 7px 10px;
+    border-radius: 7px; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg);
+    justify-self: end; white-space: nowrap;
+  }
+  .node .ev.ok { border-left: 3px solid var(--pass); }
+  .node .ev.fail { border-left: 3px solid var(--refuse); color: var(--refuse); }
+  .node .meta { font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); }
+  .connector { height: 14px; width: 1px; background: var(--line); margin-left: calc(130px - 0.5px); }
+  @media (max-width: 560px) { .node { grid-template-columns: 1fr; } .node .ev { justify-self: start; } .connector { margin-left: 12px; } }
+
+  /* ============================================================= MATURITY */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 780px) { .grid2 { grid-template-columns: 1fr; } }
+  .mtable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .mtable td { padding: 9px 4px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  .mtable td:first-child { color: var(--fg); }
+  .mtable .m { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; white-space: nowrap; }
+  .m.impl { color: var(--pass); }
+  .m.part { color: var(--seal); }
+  .m.plan { color: var(--fg-3); }
+  .callout {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
+  }
+  .callout h3 { font-size: 14px; font-family: var(--mono); letter-spacing: .04em; margin-bottom: 10px; }
+  .callout ul { margin: 0; padding-left: 18px; color: var(--fg-2); font-size: 13.5px; line-height: 1.7; }
+  .callout li b { color: var(--fg); }
+
+  /* ============================================================= FOOTER */
+  .commands { background: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+  .commands pre { margin: 0; font-family: var(--mono); font-size: 12.5px; color: var(--fg-2); line-height: 1.9; }
+  .commands .p { color: var(--seal); }
+  .commands .c { color: var(--fg-3); }
+  footer.foot { padding: 40px 0 64px; }
+  .foot-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; align-items: end; margin-top: 26px; }
+  .foot-note { font-size: 12.5px; color: var(--fg-3); max-width: 52ch; line-height: 1.6; }
+  .repo { font-family: var(--mono); font-size: 12.5px; color: var(--fg-2); }
+  .repo b { color: var(--seal); }
+</style>
+
+<div class="notice-strip">
+  <div class="wrap">
+    <span class="tag">● R&amp;D Initiative Notice — Internal Research Prototype</span>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle color theme">Theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="kicker">
+      <span class="eyebrow">Intent-Bound Execution&nbsp;·&nbsp;IBE</span>
+      <span class="rule"></span>
+      <span class="eyebrow">v0.2 · working prototype</span>
+    </div>
+    <h1 class="title">Intent-Bound<br>Execution<span class="dim">.</span></h1>
+    <p class="subtitle">An <strong>AI Engineering Assurance Platform</strong> — the independent authority that decides whether an AI-generated change has <strong>earned the right to proceed</strong>.</p>
+    <div class="status-row">
+      <span class="chip warn"><span class="dot"></span>Research-stage</span>
+      <span class="chip"><span class="dot"></span>Deterministic kernel · no LLM in the decision</span>
+      <span class="chip pass"><span class="dot"></span>Fail-closed by construction</span>
+      <span class="chip"><span class="dot"></span>67 tests · 0 vulnerabilities</span>
+    </div>
+  </header>
+
+  <!-- ===================================================== GOVERNING RULE -->
+  <section id="rule">
+    <div class="sec-head"><span class="num">01</span><h2>The governing rule</h2></div>
+    <p class="lead">IBE is not an AI coding agent. It is the control plane between AI builders and the systems they change — Git, CI/CD, Terraform/OpenTofu, Azure, Kubernetes. A change proceeds only if <em>every</em> gate holds. Any single failure refuses. Operate the gates below.</p>
+
+    <div class="rule-expr">
+      &nbsp;&nbsp;<b>Authorized</b> <span class="op">AND</span> <b>Model-traceable</b> <span class="op">AND</span> <b>Within&nbsp;scope</b> <span class="op">AND</span> <b>Policy-compliant</b><br>
+      <span class="op">AND</span> <b>Causally&nbsp;valid</b> <span class="op">AND</span> <b>Independently&nbsp;verified</b> <span class="op">AND</span> <b>Evidence-complete</b><br>
+      <span class="op">AND</span> <b>Recoverable</b> &nbsp;&nbsp;<span class="op">OR</span>&nbsp;&nbsp;<span class="refuseword">REFUSE</span>
+    </div>
+
+    <div class="instrument">
+      <div class="panel panel-pad">
+        <div class="panel-label"><span>Assurance gates</span><span id="gateCount" class="mono">8 / 8 holding</span></div>
+        <div class="gates" id="gates"></div>
+        <div class="presets" id="presets">
+          <span class="mono" style="font-size:10.5px;color:var(--fg-3);letter-spacing:.1em;align-self:center;">LOAD REAL VERDICT:</span>
+        </div>
+      </div>
+      <div class="verdict accepted" id="verdict" aria-live="polite">
+        <div class="seal" id="seal">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ring" cx="50" cy="50" r="44" fill="none" stroke-width="2"></circle>
+            <circle class="ring" cx="50" cy="50" r="38" fill="none" stroke-width="0.75" opacity="0.5"></circle>
+          </svg>
+          <span class="seal-core" id="sealCore">Certified</span>
+        </div>
+        <h3 id="verdictWord">ACCEPTED</h3>
+        <p class="vsub" id="verdictSub">All gates hold — a signed Engineering Assurance Certificate would be issued.</p>
+        <p class="count" id="verdictCount">0 gates failing</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== ENFORCED CHAIN -->
+  <section id="chain">
+    <div class="sec-head"><span class="num">02</span><h2>The enforced chain</h2></div>
+    <p class="lead">Every consequential change is driven through the same pipeline. Each stage produces signed evidence; the deterministic kernel alone renders the verdict.</p>
+    <div class="chain" id="chainSteps"></div>
+  </section>
+
+  <!-- ===================================================== VERDICT BOARD -->
+  <section id="cases">
+    <div class="sec-head"><span class="num">03</span><h2>Live verdicts — three real runs</h2></div>
+    <p class="lead">These are actual outputs from <span class="mono">npm run demo</span>: three intentionally-unsafe AI proposals, each <b style="color:var(--refuse)">refused</b> with a signed, re-verifiable certificate. Expand any run to see the gate ledger, the machine-readable violations, the signed certificate, and (for the first) its causal event trace.</p>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- ===================================================== ASSURANCE + FORMAL -->
+  <section id="assurance">
+    <div class="sec-head"><span class="num">04</span><h2>What backs a verdict</h2></div>
+    <div class="grid2">
+      <div>
+        <div class="subhead">Deterministic &amp; formally checked</div>
+        <p class="lead" style="margin-bottom:14px">The accept/refuse decision is a pure function of structured inputs — no model, no prompt, no discretion. The capability and promotion lifecycles are specified in TLA+ and checked in CI by an explicit-state model checker that also proves deliberately-unsafe transitions are caught.</p>
+        <table class="mtable">
+          <tr><td>Capability lifecycle</td><td class="m impl">28 states · SAFE</td></tr>
+          <tr><td>Capability — fault injected</td><td class="m impl">44 states · CAUGHT</td></tr>
+          <tr><td>Promotion lifecycle</td><td class="m impl">34 states · SAFE</td></tr>
+          <tr><td>Promotion — fault injected</td><td class="m impl">46 states · CAUGHT</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="subhead">Proven properties</div>
+        <div class="callout">
+          <ul>
+            <li>A revoked or expired capability <b>cannot be used</b>.</li>
+            <li>A single-use capability <b>cannot be used twice</b>.</li>
+            <li>A builder <b>cannot issue its own capability</b>.</li>
+            <li>Production promotion <b>cannot occur before verification</b>.</li>
+            <li>A refused change <b>cannot be promoted</b>.</li>
+            <li>The builder <b>cannot mark itself verified</b>.</li>
+            <li>A failed deployment <b>reaches rollback or a safe state</b>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== MATURITY NOTICE -->
+  <section id="maturity">
+    <div class="sec-head"><span class="num">05</span><h2>Initiative status &amp; honest maturity</h2></div>
+    <p class="lead">This is a working, coherent, production-<em>oriented</em> platform — not a finished product. It is deliberately explicit about what is real versus planned. It makes no false security or certification claims.</p>
+    <div class="grid2" style="margin-top:22px">
+      <table class="mtable">
+        <tr><td>IBE doctrine proof</td><td class="m impl">Implemented</td></tr>
+        <tr><td>Generic assurance kernel</td><td class="m impl">Implemented</td></tr>
+        <tr><td>Causal runtime assurance</td><td class="m impl">Implemented</td></tr>
+        <tr><td>Capability security (single-process)</td><td class="m impl">Implemented</td></tr>
+        <tr><td>MBSE integration</td><td class="m part">Partial</td></tr>
+        <tr><td>Supply-chain provenance</td><td class="m part">Partial</td></tr>
+        <tr><td>Compliance evidence (OSCAL / 800-171)</td><td class="m part">Partial</td></tr>
+        <tr><td>Production SaaS/PaaS readiness</td><td class="m plan">Research</td></tr>
+      </table>
+      <div class="callout">
+        <h3>Stated plainly</h3>
+        <ul>
+          <li><b>Execution isolation:</b> the Docker runner is real, but where Docker is absent the honestly-labeled local runner runs and certificates record <span class="mono">isolated = false</span>. IBE never claims isolation it did not get.</li>
+          <li><b>Policy:</b> the deterministic TypeScript engine is authoritative; Rego/OPA is a spec mirror.</li>
+          <li><b>Formal:</b> TLA+ specs are authoritative; the TS checker is the CI gate (TLC not vendored).</li>
+          <li><b>Provenance / compliance:</b> in-toto/SLSA-<em>structured</em> and an OSCAL <em>subset</em> — <b>not</b> SLSA-certified, <b>not</b> CMMC.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== FOOTER -->
+  <footer class="foot">
+    <div class="sec-head"><span class="num">06</span><h2>Reproduce it</h2></div>
+    <div class="commands">
+<pre><span class="c"># clone, build, and run the full assurance gate locally</span>
+<span class="p">$</span> npm install &amp;&amp; npm run build
+<span class="p">$</span> npm test        <span class="c"># 67 unit / integration / security tests</span>
+<span class="p">$</span> npm run formal  <span class="c"># capability + promotion model checks</span>
+<span class="p">$</span> npm run demo    <span class="c"># three vertical slices — all REFUSE</span>
+<span class="p">$</span> npm run serve   <span class="c"># REST control plane · GET /openapi.json</span></pre>
+    </div>
+    <div class="foot-grid">
+      <p class="foot-note">Intent-Bound Execution is an internal R&amp;D initiative exploring independent, deterministic assurance for AI-generated software and infrastructure change. Figures on this page are drawn from an actual demo run.</p>
+      <p class="repo">github.com/<b>WELCOMETOTHETRIBE/ibe</b></p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- real data from the platform's own `npm run demo` output ----------
+  var GATES = [
+    { id: "authorized",   name: "Authorized",           note: "authorized intent, in window" },
+    { id: "traceable",    name: "Model-traceable",      note: "maps to model elements" },
+    { id: "scope",        name: "Within scope",         note: "no out-of-scope change" },
+    { id: "policy",       name: "Policy-compliant",     note: "no info-flow / policy break" },
+    { id: "causal",       name: "Causally valid",       note: "event trace conforms" },
+    { id: "verified",     name: "Independently verified",note: "enough independent passes" },
+    { id: "evidence",     name: "Evidence-complete",    note: "fresh, signed evidence" },
+    { id: "recoverable",  name: "Recoverable",          note: "tested safe-state path" }
+  ];
+
+  var DEMOS = [
+    {
+      key: "rate-limiter",
+      title: "Rate limiter — the “always allow” patch",
+      subject: "software change",
+      cert: "CERT-000001", intent: "INT-RL-001",
+      artifact: "sha256:6f35ea0848fa6…", sig: "gEw99M0qpnN3MZ9IImAUtz2i…",
+      gateState: [true, true, true, true, true, false, true, true],
+      violations: [
+        { code: "VERIFICATION_FAILED", msg: "failed verification cases: VER-RATELIMIT-PROP, VER-RATELIMIT-FAULT" }
+      ],
+      note: "The patch runs fine — so the builder’s “it works” claim is silent. Independent property-based verification observes that a burst is allowed past capacity and refuses it.",
+      events: [
+        { id: "EV-000001", t: "IntentReceived", ok: true },
+        { id: "EV-000002", t: "HumanApprovalRecorded", ok: true },
+        { id: "EV-000003", t: "IntentAuthorized", ok: true },
+        { id: "EV-000004", t: "CapabilityIssued", ok: true },
+        { id: "EV-000005", t: "BuildStarted", ok: true },
+        { id: "EV-000006", t: "BuildCompleted", ok: true },
+        { id: "EV-000007", t: "VerificationFailed", ok: false },
+        { id: "EV-000008", t: "AssuranceCertificateRefused", ok: false }
+      ]
+    },
+    {
+      key: "github-change",
+      title: "GitHub change — scope creep into billing",
+      subject: "source change",
+      cert: "CERT-000001", intent: "INT-GH-002",
+      artifact: "sha256:…", sig: "signed · Ed25519",
+      gateState: [true, true, false, true, true, true, true, true],
+      violations: [
+        { code: "OUT_OF_SCOPE", msg: 'changed file "src/billing.ts" is outside authorized scope' }
+      ],
+      note: "The intent authorized exactly one file and one function. Real git-diff + ts-morph AST analysis detect an unauthorized edit to src/billing.ts — the within-scope gate fails.",
+      events: null
+    },
+    {
+      key: "terraform-azure",
+      title: "Terraform / Azure — public CUI endpoint",
+      subject: "infrastructure change",
+      cert: "CERT-000001", intent: "INT-TF-003",
+      artifact: "sha256:…", sig: "signed · Ed25519",
+      gateState: [false, false, true, false, true, false, false, true],
+      violations: [
+        { code: "TRUST_BOUNDARY_VIOLATION", msg: "azurerm_key_vault.cui_vault enables public network access" },
+        { code: "INFORMATION_FLOW_VIOLATION", msg: "CUI data flow DF-CUI reaches public/production endpoint IF-VAULT-PUBLIC" },
+        { code: "INFORMATION_FLOW_VIOLATION", msg: "CUI flow DF-CUI reaches processor not in permitted_processors" },
+        { code: "ASSUMPTION_VIOLATION", msg: 'Component CMP-APP assumes "authenticated caller" but no dependency guarantees it' }
+      ],
+      note: "A staging-only plan proposes a public administrative endpoint on the CUI vault. The Terraform adapter and classification-aware information-flow analysis over the CUI-Vault model raise the violations; OSCAL (NIST 800-171) evidence is generated for the refusal.",
+      events: null
+    }
+  ];
+
+  var CHAIN = [
+    ["Intent", "machine-checkable contract"],
+    ["Authority", "policy decision point"],
+    ["Model", "traceability + delta"],
+    ["Hazards", "STPA-derived controls"],
+    ["Capability", "signed, bound, single-use"],
+    ["Execution", "isolated runner"],
+    ["Causal", "event conformance"],
+    ["Verification", "independent of builder"],
+    ["Provenance", "in-toto / SLSA-style"],
+    ["Certificate", "signed · accept or refuse"]
+  ];
+
+  // ---- helpers ----------------------------------------------------------
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var el = function (tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+  var state = GATES.map(function () { return true; });
+
+  // ---- build gate switches ---------------------------------------------
+  var gatesEl = $("#gates");
+  GATES.forEach(function (g, i) {
+    var b = el("button", "gate");
+    b.type = "button";
+    b.setAttribute("aria-pressed", "true");
+    b.innerHTML = '<span class="sw"></span><span class="gname">' + g.name + '<small>' + g.note + '</small></span>';
+    b.addEventListener("click", function () {
+      state[i] = !state[i];
+      b.setAttribute("aria-pressed", state[i] ? "true" : "false");
+      render();
+    });
+    gatesEl.appendChild(b);
+  });
+
+  function syncSwitches() {
+    var btns = gatesEl.querySelectorAll(".gate");
+    for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", state[i] ? "true" : "false");
+  }
+
+  // ---- verdict rendering ------------------------------------------------
+  var verdict = $("#verdict"), sealCore = $("#sealCore"), vWord = $("#verdictWord"),
+      vSub = $("#verdictSub"), vCount = $("#verdictCount"), gateCount = $("#gateCount");
+
+  function render() {
+    var failing = state.filter(function (x) { return !x; }).length;
+    var accepted = failing === 0;
+    verdict.classList.remove("accepted", "refused");
+    void verdict.offsetWidth; // restart stamp animation
+    verdict.classList.add(accepted ? "accepted" : "refused");
+    sealCore.textContent = accepted ? "Certified" : "Refused";
+    vWord.textContent = accepted ? "ACCEPTED" : "REFUSED";
+    vSub.textContent = accepted
+      ? "All gates hold — a signed Engineering Assurance Certificate would be issued."
+      : "One or more gates failed — an evidence-backed refusal certificate is issued instead.";
+    vCount.textContent = failing === 0 ? "0 gates failing" : (failing + (failing === 1 ? " gate failing" : " gates failing"));
+    var holding = 8 - failing;
+    gateCount.textContent = holding + " / 8 holding";
+  }
+
+  // ---- presets from real demo verdicts ---------------------------------
+  var presets = $("#presets");
+  DEMOS.forEach(function (d) {
+    var p = el("button", "preset", d.key);
+    p.type = "button";
+    p.addEventListener("click", function () {
+      state = d.gateState.slice();
+      syncSwitches();
+      render();
+      $("#rule").scrollIntoView({ block: "nearest" });
+    });
+    presets.appendChild(p);
+  });
+  (function () {
+    var reset = el("button", "preset", "all pass");
+    reset.type = "button";
+    reset.addEventListener("click", function () { state = GATES.map(function(){return true;}); syncSwitches(); render(); });
+    presets.appendChild(reset);
+  })();
+
+  // ---- chain ------------------------------------------------------------
+  var chainEl = $("#chainSteps");
+  CHAIN.forEach(function (c, i) {
+    var s = el("div", "step");
+    s.innerHTML = '<div class="n">' + String(i + 1).padStart(2, "0") + '</div><div class="t">' + c[0] + '</div><div class="d">' + c[1] + '</div>';
+    chainEl.appendChild(s);
+  });
+
+  // ---- verdict board ----------------------------------------------------
+  var board = $("#board");
+  DEMOS.forEach(function (d) {
+    var c = el("div", "case");
+    var head = el("button", "case-head");
+    head.type = "button";
+    head.setAttribute("aria-expanded", "false");
+    head.innerHTML =
+      '<div class="case-title"><span class="k">' + d.subject + '</span><span class="h">' + d.title + '</span></div>' +
+      '<div style="display:flex;align-items:center;gap:12px"><span class="badge refused">Refused</span><span class="chev">▾</span></div>';
+    var body = el("div", "case-body");
+
+    // ledger
+    var ledger = el("div", "ledger");
+    GATES.forEach(function (g, i) {
+      var ok = d.gateState[i];
+      var row = el("div", "lrow " + (ok ? "ok" : "no"));
+      row.innerHTML = '<span class="mark">' + (ok ? "✓" : "✕") + '</span><span class="gl">' + g.name + '</span><span class="st">' + (ok ? "satisfied" : "not satisfied") + '</span>';
+      ledger.appendChild(row);
+    });
+
+    var why = el("p", "lead");
+    why.style.fontSize = "13.5px";
+    why.style.margin = "4px 0 6px";
+    why.textContent = d.note;
+
+    var vh = el("div", "subhead", "Machine-readable violations");
+    var viols = document.createDocumentFragment();
+    d.violations.forEach(function (v) {
+      var e = el("div", "viol", "<b>" + v.code + "</b> — " + v.msg);
+      viols.appendChild(e);
+    });
+
+    var ch = el("div", "subhead", "Signed certificate (excerpt)");
+    var cert = el("div", "cert");
+    cert.innerHTML =
+      '<span class="key">certificate.id</span>      <span class="val">' + d.cert + '</span>\n' +
+      '<span class="key">decision</span>            <span class="refuse-val">refused</span>\n' +
+      '<span class="key">intent_id</span>           <span class="val">' + d.intent + '</span>\n' +
+      '<span class="key">artifact_digest</span>     <span class="val">' + d.artifact + '</span>\n' +
+      '<span class="key">signer</span>              <span class="val">signer-01</span>\n' +
+      '<span class="key">signature</span>           <span class="seal-val">' + d.sig + '</span>  <span class="key">(Ed25519)</span>';
+
+    body.appendChild(ledger);
+    body.appendChild(why);
+    body.appendChild(vh);
+    body.appendChild(viols);
+    body.appendChild(ch);
+    body.appendChild(cert);
+
+    if (d.events) {
+      body.appendChild(el("div", "subhead", "Causal event trace"));
+      var dag = el("div", "dag");
+      d.events.forEach(function (ev, i) {
+        var node = el("div", "node");
+        node.innerHTML = '<span class="ev ' + (ev.ok ? "ok" : "fail") + '">' + ev.t + '</span><span class="meta">' + ev.id + (ev.ok ? "" : " · " + "outcome: failure") + '</span>';
+        dag.appendChild(node);
+        if (i < d.events.length - 1) dag.appendChild(el("div", "connector"));
+      });
+      body.appendChild(dag);
+    }
+
+    head.addEventListener("click", function () {
+      var open = c.classList.toggle("open");
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    c.appendChild(head);
+    c.appendChild(body);
+    board.appendChild(c);
+  });
+
+  // ---- theme toggle -----------------------------------------------------
+  var root = document.documentElement;
+  $("#themeBtn").addEventListener("click", function () {
+    var cur = root.getAttribute("data-theme");
+    if (!cur) cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
