@@ -1,0 +1,10 @@
+# Railway / Nixpacks build for the IBE control plane (serves the UI + REST API).
+# devDependencies must be installed so `tsc` is available for the build.
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node dist/packages/api/server.js"

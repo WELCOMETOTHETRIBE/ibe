@@ -9,6 +9,8 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { FixedClock, digestOf } from '../shared/index.js';
 import { validateIntent } from '../intent/index.js';
 import { validateModel, computeModelDelta } from '../model/index.js';
@@ -53,12 +55,42 @@ function send(res: ServerResponse, status: number, body: unknown): void {
   res.end(payload);
 }
 
+function sendHtml(res: ServerResponse, status: number, html: string): void {
+  res.writeHead(status, {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'public, max-age=300',
+  });
+  res.end(html);
+}
+
+/** The self-contained demo UI (web/index.html), read once and cached. */
+let uiCache: string | null = null;
+function loadUi(): string {
+  if (uiCache !== null) return uiCache;
+  for (const p of [
+    join(process.cwd(), 'web', 'index.html'),
+    join(process.cwd(), '..', '..', '..', 'web', 'index.html'),
+  ]) {
+    if (existsSync(p)) {
+      uiCache = readFileSync(p, 'utf-8');
+      return uiCache;
+    }
+  }
+  uiCache =
+    '<!doctype html><meta charset="utf-8"><title>IBE</title><body style="font-family:monospace;background:#06070D;color:#F4F6FB;padding:40px">IBE control plane is running. UI asset not found; see <a style="color:#00E5FF" href="/openapi.json">/openapi.json</a>.</body>';
+  return uiCache;
+}
+
 export function createIbeServer() {
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
     const route = `${req.method} ${url.pathname}`;
     try {
       switch (route) {
+        case 'GET /':
+        case 'GET /index.html':
+        case 'GET /ui':
+          return sendHtml(res, 200, loadUi());
         case 'GET /health':
           return send(res, 200, { ok: true });
         case 'GET /openapi.json':
