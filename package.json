@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/packages/cli/index.js",
+    "start": "node dist/packages/api/server.js",
     "ibe": "node dist/packages/cli/index.js",
     "serve": "node dist/packages/api/server.js",
     "test": "node --test \"dist/**/*.test.js\"",
