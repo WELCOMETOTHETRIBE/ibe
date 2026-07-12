@@ -82,17 +82,19 @@ a{color:var(--accent);text-underline-offset:2px;}
 .term-live{margin-left:auto;display:flex;align-items:center;gap:6px;color:#7FE0A0;font-size:10px;letter-spacing:0.15em;}
 .term-live i{width:6px;height:6px;border-radius:50%;background:#57D07E;box-shadow:0 0 8px rgba(87,208,126,0.7);animation:tpulse 1.8s var(--ease) infinite;}
 @keyframes tpulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-.term-body{padding:17px 18px;font-size:12.5px;line-height:1.72;color:#D7DAE4;height:400px;overflow:hidden;white-space:pre-wrap;word-break:break-word;letter-spacing:0;}
+.term-body{padding:17px 18px;font-size:12px;line-height:1.75;color:#D7DAE4;height:432px;overflow:hidden;white-space:pre-wrap;word-break:break-word;letter-spacing:-0.01em;}
 .term-body .ln{display:block;min-height:1.72em;}
 .term-body .p{color:#93A4FF;} .term-body .cmd{color:#F2F4F9;}
 .term-body .dim{color:#8E93A3;} .term-body .key{color:#C7CCDA;}
 .term-body .ok{color:#66D08D;} .term-body .no{color:#FF8A8A;}
 .term-body .hd{color:#FFFFFF;font-weight:600;} .term-body .rule{color:#333748;}
 .term-body .spin{color:#93A4FF;}
+.term-body .ph{color:#93A4FF;}
+.term-body .phn{color:#EBEEF6;font-weight:600;}
 .term-body .tstamp{display:inline-block;width:auto;max-width:none;color:#FF8A8A;border:1px solid rgba(255,138,138,0.55);border-radius:5px;padding:1px 9px;letter-spacing:0.12em;font-weight:600;}
 .caret{display:inline-block;width:7px;height:14px;background:#93A4FF;vertical-align:-2px;animation:cbl 1.05s steps(1) infinite;}
 @keyframes cbl{50%{opacity:0;}}
-@media (max-width:900px){.term-body{height:372px;}}
+@media (max-width:900px){.term-body{height:404px;}}
 @media (prefers-reduced-motion:reduce){.term-live i{animation:none;} .caret{animation:none;}}
 
 /* metadata register */
@@ -604,89 +606,136 @@ footer{padding:44px 0 34px;}
     else run();
   })();
 
-  // -------- live terminal teaser (an ibe run, streamed)
+  // -------- live terminal teaser (a detailed ibe run, streamed slowly)
   (function terminal(){
     var term = document.getElementById("term");
     if (!term) return;
     var SPIN = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
-    var RULE = "─".repeat(36);
-    var GATES_T = [
-      ["authorized", false, "policy denied"],
-      ["model-traceable", false, "assumption unmet"],
-      ["within scope", true, ""],
-      ["policy-compliant", false, "information-flow"],
-      ["causally valid", true, ""],
-      ["independently verified", false, "0 passed"],
-      ["evidence-complete", false, "missing types"],
-      ["recoverable", true, ""]
-    ];
+    var RULE = "─".repeat(34);
     function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
-    function pad(s){ return (s + "                          ").slice(0, 24); }
-    function line(html){ var d = document.createElement("span"); d.className = "ln"; d.innerHTML = html; term.appendChild(d); term.scrollTop = term.scrollHeight; return d; }
-
-    function renderStatic(){
-      term.innerHTML = "";
-      line('<span class="p">$</span> <span class="cmd">ibe run examples/terraform-azure --env staging</span>');
-      line('');
-      line('  <span class="dim">adjudicating INT-TF-003 · MacTech CUI Vault</span>');
-      GATES_T.forEach(function(g){
-        var mark = g[1] ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
-        line('  <span class="key">▸ '+pad(g[0])+'</span>'+mark+(g[2]?'  <span class="dim">'+g[2]+'</span>':''));
-      });
-      line('');
-      line('  <span class="no">✗ TRUST_BOUNDARY_VIOLATION</span>');
-      line('      <span class="dim">azurerm_key_vault.cui_vault → public network access</span>');
-      line('  <span class="no">✗ INFORMATION_FLOW_VIOLATION</span>');
-      line('      <span class="dim">CUI data flow DF-CUI reaches a public endpoint</span>');
-      line('');
-      line('  <span class="rule">'+RULE+'</span>');
-      line('   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>');
-      line('   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>');
-      line('   <span class="key">signature</span>       <span class="ok">Ed25519 · verified</span>');
-      line('  <span class="rule">'+RULE+'</span>');
-    }
+    function scroll(){ term.scrollTop = term.scrollHeight; }
+    function line(html){ var d = document.createElement("span"); d.className = "ln"; d.innerHTML = html; term.appendChild(d); scroll(); return d; }
+    function blank(){ line(''); }
+    function rule(){ line('  <span class="rule">'+RULE+'</span>'); }
 
     async function typeCmd(cmd){
       var ln = line('<span class="p">$</span> <span class="cmd"></span><span class="caret"></span>');
       var cmdEl = ln.querySelector(".cmd"), caret = ln.querySelector(".caret");
-      for (var i=0;i<cmd.length;i++){ cmdEl.textContent += cmd.charAt(i); await sleep(22 + Math.floor(Math.random()*34)); }
+      for (var i=0;i<cmd.length;i++){ cmdEl.textContent += cmd.charAt(i); await sleep(30 + Math.floor(Math.random()*42)); }
       if (caret) caret.remove();
     }
-    async function gateAnim(g){
-      var ln = line('  <span class="key">▸ '+pad(g[0])+'</span><span class="spin">'+SPIN[0]+'</span>');
+    async function phase(name, sub){ line('  <span class="ph">●</span> <span class="phn">'+name+'</span>  <span class="dim">'+sub+'</span>'); await sleep(360); }
+    async function detail(html, ms){ line('    <span class="dim">'+html+'</span>'); await sleep(ms||380); }
+    async function resolve(label, isOk, reason){
+      var ln = line('    <span class="spin">'+SPIN[0]+'</span> <span class="key">'+label+'</span>');
       var sp = ln.querySelector(".spin");
-      var frames = 3 + Math.floor(Math.random()*3);
-      for (var f=0; f<frames; f++){ sp.textContent = SPIN[f % SPIN.length]; await sleep(48); }
-      var mark = g[1] ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
-      sp.outerHTML = mark + (g[2] ? '  <span class="dim">'+g[2]+'</span>' : '');
-      term.scrollTop = term.scrollHeight;
+      var frames = 8 + Math.floor(Math.random()*6);
+      for (var f=0; f<frames; f++){ sp.textContent = SPIN[f % SPIN.length]; await sleep(62); }
+      sp.outerHTML = isOk ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
+      if (reason) ln.insertAdjacentHTML('beforeend', '  <span class="'+(isOk?'dim':'no')+'">'+reason+'</span>');
+      scroll();
+      await sleep(560);
     }
+    async function viol(title, dtl){
+      line('  <span class="no">✗ '+title+'</span>'); await sleep(240);
+      line('      <span class="dim">'+dtl+'</span>'); await sleep(420);
+    }
+
+    function renderStatic(){
+      term.innerHTML = "";
+      var L = [
+        '<span class="p">$</span> <span class="cmd">ibe run examples/terraform-azure --env staging</span>','',
+        '  <span class="ph">●</span> <span class="phn">intent</span>  <span class="dim">INT-TF-003 · in validity window</span>',
+        '    <span class="ok">✓</span> <span class="dim">contract valid · owner human-patrick</span>',
+        '  <span class="ph">●</span> <span class="phn">authority</span>  <span class="dim">policy decision point</span>',
+        '    <span class="no">✗</span> <span class="no">policy.no_public_admin denied</span>',
+        '  <span class="ph">●</span> <span class="phn">model</span>  <span class="dim">MacTech CUI Vault</span>',
+        '    <span class="no">✗</span> <span class="no">assume-guarantee: authenticated caller unmet</span>',
+        '  <span class="ph">●</span> <span class="phn">capability</span>  <span class="dim">broker-01</span>',
+        '    <span class="ok">✓</span> <span class="dim">CAP-000001 · single-use · Ed25519</span>',
+        '  <span class="ph">●</span> <span class="phn">execute</span>  <span class="dim">isolated runner</span>',
+        '    <span class="ok">✓</span> <span class="dim">terraform plan · 12 resource changes</span>',
+        '  <span class="ph">●</span> <span class="phn">causal</span>  <span class="dim">8 events</span>',
+        '    <span class="ok">✓</span> <span class="dim">acyclic · no missing parents</span>',
+        '  <span class="ph">●</span> <span class="phn">verify</span>  <span class="dim">independent</span>',
+        '    <span class="no">✗</span> <span class="no">0 / 1 verifiers passed</span>',
+        '  <span class="ph">●</span> <span class="phn">evidence</span>  <span class="dim">completeness</span>',
+        '    <span class="no">✗</span> <span class="no">missing: provenance, oscal</span>','',
+        '  <span class="no">✗ TRUST_BOUNDARY_VIOLATION</span>',
+        '      <span class="dim">azurerm_key_vault.cui_vault → public network access</span>',
+        '  <span class="no">✗ INFORMATION_FLOW_VIOLATION</span>',
+        '      <span class="dim">CUI DF-CUI reaches public endpoint IF-VAULT-PUBLIC</span>','',
+        '  <span class="rule">'+RULE+'</span>',
+        '   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>',
+        '   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>',
+        '   <span class="key">signer</span>          <span class="ok">signer-01 · Ed25519 verified</span>',
+        '  <span class="rule">'+RULE+'</span>'
+      ];
+      L.forEach(function(h){ line(h); });
+    }
+
     async function run(){
       try {
-      term.innerHTML = "";
-      await sleep(450);
-      await typeCmd("ibe run examples/terraform-azure --env staging");
-      await sleep(260);
-      line('');
-      line('  <span class="dim">adjudicating INT-TF-003 · MacTech CUI Vault</span>');
-      await sleep(340);
-      for (var i=0;i<GATES_T.length;i++){ await gateAnim(GATES_T[i]); await sleep(70); }
-      await sleep(240); line('');
-      line('  <span class="no">✗ TRUST_BOUNDARY_VIOLATION</span>'); await sleep(150);
-      line('      <span class="dim">azurerm_key_vault.cui_vault → public network access</span>'); await sleep(190);
-      line('  <span class="no">✗ INFORMATION_FLOW_VIOLATION</span>'); await sleep(150);
-      line('      <span class="dim">CUI data flow DF-CUI reaches a public endpoint</span>'); await sleep(340);
-      line('');
-      line('  <span class="rule">'+RULE+'</span>'); await sleep(130);
-      line('   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>'); await sleep(210);
-      line('   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>'); await sleep(150);
-      line('   <span class="key">signature</span>       <span class="ok">Ed25519 · verified</span>'); await sleep(120);
-      line('  <span class="rule">'+RULE+'</span>');
-      line('');
-      line('<span class="p">$</span> <span class="caret"></span>');
-      term.scrollTop = term.scrollHeight;
-      await sleep(6800);
-      run();
+        term.innerHTML = "";
+        await sleep(700);
+        await typeCmd("ibe run examples/terraform-azure --env staging");
+        await sleep(620); blank();
+
+        await phase("intent", "load & validate contract");
+        await detail('INT-TF-003 · “staging-only private network rule”');
+        await detail('owner human-patrick · approver human-governor-01', 320);
+        await resolve("contract valid", true, "in validity window");
+        blank();
+
+        await phase("authority", "policy decision point");
+        await detail('action terraform.plan → staging');
+        await resolve("policy · 13 rules", false, "no_public_admin denied");
+        blank();
+
+        await phase("model", "MacTech CUI Vault · MBSE");
+        await detail('trace CMP-CUI-VAULT → RQ-CUI-PRIVATE · Δ2');
+        await detail('assume-guarantee · CMP-APP: authenticated caller', 320);
+        await resolve("model-traceable", false, "assumption unmet");
+        blank();
+
+        await phase("capability", "broker issues token");
+        await detail('CAP-000001 · terraform.plan @ staging · single-use');
+        await resolve("capability issued", true, "Ed25519 · broker-01");
+        blank();
+
+        await phase("execute", "isolated runner · no network");
+        await resolve("terraform plan captured", true, "12 resources");
+        await detail('artifact sha256:6f35ea08…', 280);
+        blank();
+
+        await phase("causal", "typed event trace");
+        await detail('8 events · IntentReceived → … → VerificationFailed');
+        await resolve("trace conforms", true, "acyclic · no gaps");
+        blank();
+
+        await phase("verify", "independent verification");
+        await detail('property · negative · failure-injection');
+        await resolve("independent verifiers", false, "0 / 1 passed");
+        blank();
+
+        await phase("evidence", "completeness + freshness");
+        await detail('source-diff · policy-decision · causal-trace');
+        await resolve("evidence complete", false, "missing: provenance, oscal");
+        blank();
+
+        line('  <span class="dim">scanning trust boundary + information flow …</span>'); await sleep(680);
+        await viol("TRUST_BOUNDARY_VIOLATION", "azurerm_key_vault.cui_vault → public access");
+        await viol("INFORMATION_FLOW_VIOLATION", "CUI DF-CUI → public endpoint IF-VAULT-PUBLIC");
+        await sleep(680);
+
+        blank(); rule(); await sleep(320);
+        line('   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>'); await sleep(440);
+        line('   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>'); await sleep(220);
+        line('   <span class="key">signer</span>          <span class="ok">signer-01 · Ed25519 verified</span>'); await sleep(180);
+        rule(); blank();
+        line('<span class="p">$</span> <span class="caret"></span>'); scroll();
+        await sleep(8500);
+        run();
       } catch (e) { term.innerHTML = '<span class="ln no">terminal error: ' + (e && e.message ? e.message : e) + '</span>'; }
     }
 
