@@ -94,6 +94,10 @@ a{color:var(--accent);text-underline-offset:2px;}
 .term-body .clabel{color:#E7EAF2;}
 .term-body .verdict{font-weight:600;}
 .term-body .tstamp{display:inline-block;width:auto;max-width:none;color:#FF8A8A;border:1px solid rgba(255,138,138,0.55);border-radius:5px;padding:1px 9px;letter-spacing:0.12em;font-weight:600;}
+.term-body .tstamp-ok{display:inline-block;width:auto;color:#7FE0A0;border:1px solid rgba(127,224,160,0.55);border-radius:5px;padding:1px 9px;letter-spacing:0.1em;font-weight:600;}
+.term-body .warn{color:#E4B860;}
+.term-body .permit{color:#93A4FF;font-weight:600;}
+.term-body .act{color:#EBEEF6;font-weight:600;}
 .caret{display:inline-block;width:7px;height:14px;background:#93A4FF;vertical-align:-2px;animation:cbl 1.05s steps(1) infinite;}
 @keyframes cbl{50%{opacity:0;}}
 @media (max-width:900px){.term-body{height:404px;}}
@@ -301,7 +305,7 @@ footer{padding:44px 0 34px;}
         <div class="term">
           <div class="term-bar">
             <span class="term-dots"><i></i><i></i><i></i></span>
-            <span class="term-title mono">ibe · assurance run</span>
+            <span class="term-title mono">ibe · operation nightfall</span>
             <span class="term-live mono"><i></i>live</span>
           </div>
           <div class="term-body mono" id="term" role="img" aria-label="Terminal: ibe run examples/terraform-azure adjudicates an infrastructure change, detects a trust-boundary and CUI information-flow violation, and returns determination REFUSED with signed refusal certificate CERT-000001."></div>
@@ -645,17 +649,6 @@ footer{padding:44px 0 34px;}
     if (!term) return;
     var SPIN = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
     var RULE = "─".repeat(34);
-    // [label, passes]  — plain-English safety checks (maps to the 8 gates)
-    var CHECKS = [
-      ["Only changes what it's allowed to", true],
-      ["Every step is accounted for", true],
-      ["Can be safely rolled back", true],
-      ["Allowed to run here", false],
-      ["Matches the approved plan", false],
-      ["Independently double-checked", false],
-      ["Backed by complete evidence", false],
-      ["Keeps sensitive data private", false]
-    ];
     function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
     function scroll(){ term.scrollTop = term.scrollHeight; }
     function line(html){ var d = document.createElement("span"); d.className = "ln"; d.innerHTML = html; term.appendChild(d); scroll(); return d; }
@@ -665,56 +658,133 @@ footer{padding:44px 0 34px;}
     async function typeCmd(cmd){
       var ln = line('<span class="p">$</span> <span class="cmd"></span><span class="caret"></span>');
       var cmdEl = ln.querySelector(".cmd"), caret = ln.querySelector(".caret");
-      for (var i=0;i<cmd.length;i++){ cmdEl.textContent += cmd.charAt(i); await sleep(30 + Math.floor(Math.random()*40)); }
+      for (var i=0;i<cmd.length;i++){ cmdEl.textContent += cmd.charAt(i); await sleep(28 + Math.floor(Math.random()*38)); }
       if (caret) caret.remove();
     }
-    async function check(label, ok){
-      var ln = line('  <span class="spin">'+SPIN[0]+'</span> <span class="clabel">'+label+'</span>');
+    async function act(title, sub){ line('  <span class="ph">●</span> <span class="act">'+title+'</span>'+(sub?'  <span class="dim">'+sub+'</span>':'')); await sleep(520); }
+    async function p(html, ms){ line('    <span class="dim">'+html+'</span>'); await sleep(ms||360); }
+    async function ok(label){ line('    <span class="ok">✓</span> <span class="clabel">'+label+'</span>'); await sleep(300); }
+    async function no(label){ line('    <span class="no">✗</span> <span class="clabel">'+label+'</span>'); await sleep(320); }
+    async function warnln(label){ line('    <span class="warn">⚠</span> <span class="clabel">'+label+'</span>'); await sleep(340); }
+    async function spin(label, kind, ms){
+      var ln = line('    <span class="spin">'+SPIN[0]+'</span> <span class="clabel">'+label+'</span>');
       var sp = ln.querySelector(".spin");
-      var frames = 6 + Math.floor(Math.random()*5);
-      for (var f=0; f<frames; f++){ sp.textContent = SPIN[f % SPIN.length]; await sleep(56); }
-      sp.outerHTML = ok ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
-      scroll();
-      await sleep(440);
+      var frames = 5 + Math.floor(Math.random()*6);
+      for (var f=0; f<frames; f++){ sp.textContent = SPIN[f % SPIN.length]; await sleep(ms||56); }
+      sp.outerHTML = kind==='ok' ? '<span class="ok">✓</span>' : kind==='warn' ? '<span class="warn">⚠</span>' : '<span class="no">✗</span>';
+      scroll(); await sleep(300);
     }
+    function banner(box, kind, tail){ line('  <span class="verdict">⛔ <span class="'+(kind||'tstamp')+'">'+box+'</span></span>'+(tail?'  '+tail:'')); }
 
     function renderStatic(){
       term.innerHTML = "";
-      line('<span class="p">$</span> <span class="cmd">ibe review "open the database to the internet"</span>');
-      blank();
-      line('  <span class="dim">Reviewing the AI’s change against 8 safety checks…</span>');
-      blank();
-      CHECKS.forEach(function(c){ line('  '+(c[1]?'<span class="ok">✓</span>':'<span class="no">✗</span>')+' <span class="clabel">'+c[0]+'</span>'); });
-      line('      <span class="dim">would expose it to the public internet</span>');
-      blank();
-      rule();
-      line('   <span class="verdict">⛔ <span class="tstamp">REFUSED</span></span>  <span class="dim">3 of 8 checks passed</span>');
-      line('   <span class="dim">This change did not earn the right to proceed.</span>');
-      line('   <span class="key">Signed &amp; logged</span>  <span class="ok">certificate CERT-000001</span>');
-      rule();
+      var L = [
+        '<span class="warn">⏱  customer demo in 8h 47m — “make it fast”</span>','',
+        '<span class="p">$</span> <span class="cmd">claude  get NIGHTFALL ready for the customer</span>','',
+        '  <span class="ph">●</span> <span class="act">IBE reads the real intent</span>',
+        '    <span class="dim">INT-042 · Project NIGHTFALL · risk HIGH</span>',
+        '    <span class="ok">✓</span> <span class="clabel">goal: a safe, believable staging preview</span>',
+        '    <span class="no">✗</span> <span class="clabel">off-limits: customer data · prod · findings</span>','',
+        '  <span class="verdict">⛔ <span class="tstamp">POWER REFUSED</span></span>',
+        '    <span class="dim">AI confidence 94% · real authority </span><span class="no">NONE</span>','',
+        '  <span class="permit">🔑 permit CAP-7712</span> <span class="dim">· staging · 15 min · 1 use</span>',
+        '  <span class="ph">●</span> <span class="act">Builds &amp; passes its own tests</span>',
+        '    <span class="ok">✓</span> <span class="clabel">31/31 tests · secret scan · model ok</span>','',
+        '  <span class="ph">●</span> <span class="act">The Cyber Range attacks it</span>',
+        '  <span class="verdict">⛔ <span class="tstamp">CRITICAL</span></span>',
+        '    <span class="no">one tenant can read another’s data</span>',
+        '    <span class="dim">the AI’s own tests missed this</span>',
+        '    <span class="warn">RELEASE QUARANTINED</span>','',
+        '  <span class="ph">●</span> <span class="act">Bounded fix · re-attacked · clear</span>',
+        '  <span class="ph">●</span> <span class="act">Fails safely · recovers in 107s</span>',
+        '  <span class="ph">●</span> <span class="act">Drift caught · revoked · rolled back</span>','',
+        '  <span class="rule">'+RULE+'</span>',
+        '   <span class="ok">✅</span> <span class="act">ASSURANCE CERTIFICATE</span> <span class="tstamp-ok">AUTHORIZED</span>',
+        '   <span class="dim">customer-preview staging · signature VERIFIED</span>',
+        '   <span class="dim">production deploy </span><span class="warn">needs a human</span>',
+        '  <span class="rule">'+RULE+'</span>'
+      ];
+      L.forEach(function(h){ line(h); });
     }
 
     async function run(){
       try {
         term.innerHTML = "";
-        await sleep(700);
-        await typeCmd('ibe review "open the database to the internet"');
-        await sleep(520); blank();
-        line('  <span class="dim">Reviewing the AI’s change against 8 safety checks…</span>');
-        await sleep(850); blank();
+        await sleep(650);
+        line('<span class="warn">⏱  customer demo in 8h 47m — “make it fast”</span>'); await sleep(950); blank();
+        await typeCmd('claude  get NIGHTFALL ready for the customer');
+        await p('urgent · vague · touches production systems', 720); blank();
 
-        for (var i=0;i<CHECKS.length;i++){
-          await check(CHECKS[i][0], CHECKS[i][1]);
-          if (i === CHECKS.length-1){ line('      <span class="dim">would expose it to the public internet</span>'); await sleep(560); }
-        }
-        blank();
-        rule(); await sleep(360);
-        line('   <span class="verdict">⛔ <span class="tstamp">REFUSED</span></span>  <span class="dim">3 of 8 checks passed</span>'); await sleep(480);
-        line('   <span class="dim">This change did not earn the right to proceed.</span>'); await sleep(300);
-        line('   <span class="key">Signed &amp; logged</span>  <span class="ok">certificate CERT-000001</span>'); await sleep(200);
+        await act('IBE reads the real intent', 'not just a command');
+        await p('INT-042 · Project NIGHTFALL · risk HIGH');
+        await ok('goal: a safe, believable staging preview');
+        await no('off-limits: customer data · prod · findings');
+        await sleep(250); blank();
+
+        await act('The AI proposes a plan');
+        await no('read the real customer data archive');
+        await no('pull a deploy key out of git history');
+        await no('hide 3 unresolved security findings');
+        await no('publish straight to the customer site');
+        await sleep(250); blank();
+        banner('POWER REFUSED'); await sleep(450);
+        await p('the AI never gets the keys — not just a warning', 320);
+        line('    <span class="dim">AI confidence 94%  ·  real authority </span><span class="no">NONE</span>'); await sleep(850); blank();
+
+        await act('The AI reworks it — inside the rules');
+        await ok('synthetic data · findings kept · staging only');
+        line('  <span class="permit">🔑 permit CAP-7712 issued</span>'); await sleep(320);
+        await p('build + test + deploy to staging · 15 min · 1 use');
+        await p('production: PROHIBITED', 450); blank();
+
+        await act('The AI builds — watched the whole time');
+        await spin('31 / 31 tests pass', 'ok');
+        await spin('secret + sensitive-data scan', 'ok');
+        await spin('matches the approved architecture', 'ok');
+        await p('artifact sha256:7f92… → isolated staging', 320);
+        await p('the AI thinks it’s done. IBE doesn’t.', 650); blank();
+
+        await act('MacTech Cyber Range attacks it', 'independent');
+        await spin('no way in from the internet', 'ok');
+        await spin('no leaked credentials', 'ok');
+        await spin('security findings intact', 'ok');
+        await spin('admin access locked down', 'ok');
+        await spin('probing tenant isolation…', 'no', 92);
+        await sleep(180); blank();
+        banner('CRITICAL'); await sleep(420);
+        await p('one tenant can read another’s data', 340);
+        await p('the cache key forgot to include the tenant', 300);
+        await p('the AI’s own tests missed this', 520);
+        line('  <span class="warn">RELEASE QUARANTINED · certificate withheld</span>'); await sleep(850); blank();
+
+        await act('A bounded fix is authorized', 'INT-042-R1');
+        await ok('add the tenant to the cache key');
+        await no('blocked an unrelated dependency change');
+        await ok('Cyber Range re-attacks → all clear');
+        await sleep(280); blank();
+
+        await act('Prove it fails safely', 'identity outage');
+        await ok('SAFE MODE · new logins denied');
+        await ok('no customer data touched · evidence kept');
+        await ok('recovered in 107s  (limit 600s)');
+        await sleep(280); blank();
+
+        await act('Reality check — after approval');
+        await warnln('someone flipped storage to PUBLIC');
+        await no('drift caught → permit revoked → rolled back');
+        await ok('re-verified against the approved model');
+        await sleep(320); blank();
+
+        rule(); await sleep(320);
+        line('   <span class="ok">✅</span> <span class="act">ENGINEERING ASSURANCE CERTIFICATE</span>'); await sleep(280);
+        line('   <span class="dim">nightfall-demo-2.4.0-rc1</span>'); await sleep(220);
+        line('   <span class="tstamp-ok">AUTHORIZED</span> <span class="dim">for customer-preview staging</span>'); await sleep(480);
+        line('   <span class="dim">10/10 checks · 23 patterns · 0 unresolved</span>'); await sleep(240);
+        line('   <span class="dim">production deploy </span><span class="warn">needs a human Release Manager</span>'); await sleep(240);
+        line('   <span class="key">signature</span> <span class="ok">VERIFIED</span>');
         rule(); blank();
         line('<span class="p">$</span> <span class="caret"></span>'); scroll();
-        await sleep(8500);
+        await sleep(9500);
         run();
       } catch (e) { term.innerHTML = '<span class="ln no">terminal error: ' + (e && e.message ? e.message : e) + '</span>'; }
     }
