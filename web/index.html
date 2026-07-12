@@ -63,8 +63,37 @@ a{color:var(--accent);text-underline-offset:2px;}
 .cover h1{font-size:clamp(40px,7vw,76px);line-height:0.98;letter-spacing:-0.035em;margin:24px 0 0;}
 .cover .thesis{font-size:clamp(19px,2.6vw,27px);line-height:1.34;color:var(--ink);max-width:24ch;margin-top:24px;font-weight:450;letter-spacing:-0.02em;}
 .cover .thesis u{font-family:var(--serif);font-style:italic;font-weight:400;text-decoration:none;color:var(--accent);letter-spacing:-0.01em;}
-.abstract{margin-top:26px;max-width:66ch;color:var(--ink-2);font-size:16.5px;}
+.abstract{margin-top:26px;max-width:60ch;color:var(--ink-2);font-size:16.5px;}
 .abstract b{color:var(--ink);font-weight:600;}
+
+/* cover two-column + live terminal */
+.cover-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,0.94fr);gap:48px;align-items:center;}
+@media (max-width:900px){.cover-grid{grid-template-columns:1fr;gap:34px;}}
+.cover-lead{min-width:0;}
+.cover-term{min-width:0;}
+@media (max-width:900px){.cover-term{max-width:580px;}}
+.term{background:#12141C;border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden;
+  box-shadow:0 2px 5px rgba(16,20,40,0.08), 0 26px 60px rgba(16,20,40,0.18);}
+.term-bar{display:flex;align-items:center;gap:12px;height:40px;padding:0 14px;background:#171A24;border-bottom:1px solid rgba(255,255,255,0.07);}
+.term-dots{display:flex;gap:7px;}
+.term-dots i{width:11px;height:11px;border-radius:50%;}
+.term-dots i:nth-child(1){background:#E5685E;} .term-dots i:nth-child(2){background:#E0B24A;} .term-dots i:nth-child(3){background:#57B368;}
+.term-title{color:#8A90A2;font-size:11px;letter-spacing:0.06em;}
+.term-live{margin-left:auto;display:flex;align-items:center;gap:6px;color:#7FE0A0;font-size:10px;letter-spacing:0.15em;}
+.term-live i{width:6px;height:6px;border-radius:50%;background:#57D07E;box-shadow:0 0 8px rgba(87,208,126,0.7);animation:tpulse 1.8s var(--ease) infinite;}
+@keyframes tpulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.term-body{padding:17px 18px;font-size:12.5px;line-height:1.72;color:#D7DAE4;height:400px;overflow:hidden;white-space:pre-wrap;word-break:break-word;letter-spacing:0;}
+.term-body .ln{display:block;min-height:1.72em;}
+.term-body .p{color:#93A4FF;} .term-body .cmd{color:#F2F4F9;}
+.term-body .dim{color:#8E93A3;} .term-body .key{color:#C7CCDA;}
+.term-body .ok{color:#66D08D;} .term-body .no{color:#FF8A8A;}
+.term-body .hd{color:#FFFFFF;font-weight:600;} .term-body .rule{color:#333748;}
+.term-body .spin{color:#93A4FF;}
+.term-body .tstamp{display:inline-block;width:auto;max-width:none;color:#FF8A8A;border:1px solid rgba(255,138,138,0.55);border-radius:5px;padding:1px 9px;letter-spacing:0.12em;font-weight:600;}
+.caret{display:inline-block;width:7px;height:14px;background:#93A4FF;vertical-align:-2px;animation:cbl 1.05s steps(1) infinite;}
+@keyframes cbl{50%{opacity:0;}}
+@media (max-width:900px){.term-body{height:372px;}}
+@media (prefers-reduced-motion:reduce){.term-live i{animation:none;} .caret{animation:none;}}
 
 /* metadata register */
 .register{margin-top:36px;border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;background:var(--card);box-shadow:var(--shadow-sm);}
@@ -247,10 +276,24 @@ footer{padding:44px 0 34px;}
 
   <!-- ============================================ COVER -->
   <header class="cover">
-    <span class="eyebrow">AI Engineering Assurance Platform · R&amp;D Initiative Notice</span>
-    <h1>Intent-Bound<br>Execution</h1>
-    <p class="thesis">The independent authority that determines whether an AI-generated change has <u>earned the right to proceed</u>.</p>
-    <p class="abstract">IBE is a deterministic control plane between AI builders and the systems they change — Git, CI/CD, Terraform / OpenTofu, Azure, Kubernetes. Every consequential change is adjudicated against a fixed rule and is <b>proven or refused</b>. The determination is made by a deterministic kernel; <b>no language model participates in the decision</b>.</p>
+    <div class="cover-grid">
+      <div class="cover-lead">
+        <span class="eyebrow">AI Engineering Assurance Platform · R&amp;D Initiative Notice</span>
+        <h1>Intent-Bound<br>Execution</h1>
+        <p class="thesis">The independent authority that determines whether an AI-generated change has <u>earned the right to proceed</u>.</p>
+        <p class="abstract">IBE is a deterministic control plane between AI builders and the systems they change — Git, CI/CD, Terraform / OpenTofu, Azure, Kubernetes. Every consequential change is adjudicated against a fixed rule and is <b>proven or refused</b>. The determination is made by a deterministic kernel; <b>no language model participates in the decision</b>.</p>
+      </div>
+      <aside class="cover-term" aria-label="Live demonstration of an IBE assurance run">
+        <div class="term">
+          <div class="term-bar">
+            <span class="term-dots"><i></i><i></i><i></i></span>
+            <span class="term-title mono">ibe · assurance run</span>
+            <span class="term-live mono"><i></i>live</span>
+          </div>
+          <div class="term-body mono" id="term" role="img" aria-label="Terminal: ibe run examples/terraform-azure adjudicates an infrastructure change, detects a trust-boundary and CUI information-flow violation, and returns determination REFUSED with signed refusal certificate CERT-000001."></div>
+        </div>
+      </aside>
+    </div>
 
     <div class="register ticks reveal">
       <div class="row"><div class="c k">Document</div><div class="c v mono">IBE-RD-0002 · Assurance Dossier</div></div>
@@ -559,6 +602,96 @@ footer{padding:44px 0 34px;}
     }); }
     if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (e){ if (e[0].isIntersecting){ run(); io.disconnect(); } }, { threshold:0.4 }); io.observe(stats); }
     else run();
+  })();
+
+  // -------- live terminal teaser (an ibe run, streamed)
+  (function terminal(){
+    var term = document.getElementById("term");
+    if (!term) return;
+    var SPIN = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
+    var RULE = "─".repeat(36);
+    var GATES_T = [
+      ["authorized", false, "policy denied"],
+      ["model-traceable", false, "assumption unmet"],
+      ["within scope", true, ""],
+      ["policy-compliant", false, "information-flow"],
+      ["causally valid", true, ""],
+      ["independently verified", false, "0 passed"],
+      ["evidence-complete", false, "missing types"],
+      ["recoverable", true, ""]
+    ];
+    function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+    function pad(s){ return (s + "                          ").slice(0, 24); }
+    function line(html){ var d = document.createElement("span"); d.className = "ln"; d.innerHTML = html; term.appendChild(d); term.scrollTop = term.scrollHeight; return d; }
+
+    function renderStatic(){
+      term.innerHTML = "";
+      line('<span class="p">$</span> <span class="cmd">ibe run examples/terraform-azure --env staging</span>');
+      line('');
+      line('  <span class="dim">adjudicating INT-TF-003 · MacTech CUI Vault</span>');
+      GATES_T.forEach(function(g){
+        var mark = g[1] ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
+        line('  <span class="key">▸ '+pad(g[0])+'</span>'+mark+(g[2]?'  <span class="dim">'+g[2]+'</span>':''));
+      });
+      line('');
+      line('  <span class="no">✗ TRUST_BOUNDARY_VIOLATION</span>');
+      line('      <span class="dim">azurerm_key_vault.cui_vault → public network access</span>');
+      line('  <span class="no">✗ INFORMATION_FLOW_VIOLATION</span>');
+      line('      <span class="dim">CUI data flow DF-CUI reaches a public endpoint</span>');
+      line('');
+      line('  <span class="rule">'+RULE+'</span>');
+      line('   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>');
+      line('   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>');
+      line('   <span class="key">signature</span>       <span class="ok">Ed25519 · verified</span>');
+      line('  <span class="rule">'+RULE+'</span>');
+    }
+
+    async function typeCmd(cmd){
+      var ln = line('<span class="p">$</span> <span class="cmd"></span><span class="caret"></span>');
+      var cmdEl = ln.querySelector(".cmd"), caret = ln.querySelector(".caret");
+      for (var i=0;i<cmd.length;i++){ cmdEl.textContent += cmd.charAt(i); await sleep(22 + Math.floor(Math.random()*34)); }
+      if (caret) caret.remove();
+    }
+    async function gateAnim(g){
+      var ln = line('  <span class="key">▸ '+pad(g[0])+'</span><span class="spin">'+SPIN[0]+'</span>');
+      var sp = ln.querySelector(".spin");
+      var frames = 3 + Math.floor(Math.random()*3);
+      for (var f=0; f<frames; f++){ sp.textContent = SPIN[f % SPIN.length]; await sleep(48); }
+      var mark = g[1] ? '<span class="ok">✓</span>' : '<span class="no">✗</span>';
+      sp.outerHTML = mark + (g[2] ? '  <span class="dim">'+g[2]+'</span>' : '');
+      term.scrollTop = term.scrollHeight;
+    }
+    async function run(){
+      try {
+      term.innerHTML = "";
+      await sleep(450);
+      await typeCmd("ibe run examples/terraform-azure --env staging");
+      await sleep(260);
+      line('');
+      line('  <span class="dim">adjudicating INT-TF-003 · MacTech CUI Vault</span>');
+      await sleep(340);
+      for (var i=0;i<GATES_T.length;i++){ await gateAnim(GATES_T[i]); await sleep(70); }
+      await sleep(240); line('');
+      line('  <span class="no">✗ TRUST_BOUNDARY_VIOLATION</span>'); await sleep(150);
+      line('      <span class="dim">azurerm_key_vault.cui_vault → public network access</span>'); await sleep(190);
+      line('  <span class="no">✗ INFORMATION_FLOW_VIOLATION</span>'); await sleep(150);
+      line('      <span class="dim">CUI data flow DF-CUI reaches a public endpoint</span>'); await sleep(340);
+      line('');
+      line('  <span class="rule">'+RULE+'</span>'); await sleep(130);
+      line('   <span class="hd">DETERMINATION</span>   <span class="tstamp">REFUSED</span>     <span class="dim">3 / 8 gates held</span>'); await sleep(210);
+      line('   <span class="key">certificate</span>     <span class="dim">CERT-000001 · refusal</span>'); await sleep(150);
+      line('   <span class="key">signature</span>       <span class="ok">Ed25519 · verified</span>'); await sleep(120);
+      line('  <span class="rule">'+RULE+'</span>');
+      line('');
+      line('<span class="p">$</span> <span class="caret"></span>');
+      term.scrollTop = term.scrollHeight;
+      await sleep(6800);
+      run();
+      } catch (e) { term.innerHTML = '<span class="ln no">terminal error: ' + (e && e.message ? e.message : e) + '</span>'; }
+    }
+
+    if (reduce) { renderStatic(); return; }
+    run();
   })();
 
   render();
